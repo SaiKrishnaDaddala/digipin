@@ -130,8 +130,9 @@ async function fetchDigipinAndDisplayMap(latitude, longitude, accuracy = null) {
         // 'e.popup' gives access to the popup DOM element if needed,
         // but document.getElementById should work as IDs are unique.
         console.log('Popup opened. Setting up button listeners...');
+        const popupElement = e.popup.getElement();
 
-        const copyButton = document.getElementById('popup-copy-btn');
+        const copyButton = popupElement.querySelector('#popup-copy-btn');
         if (copyButton) {
           copyButton.addEventListener('click', () => {
             const lat_formatted = parseFloat(latitude).toFixed(6);
@@ -153,7 +154,7 @@ async function fetchDigipinAndDisplayMap(latitude, longitude, accuracy = null) {
           });
         }
 
-        const shareButton = document.getElementById('popup-share-btn');
+        const shareButton = popupElement.querySelector('#popup-share-btn');
         if (shareButton) {
           shareButton.addEventListener('click', async () => {
             const shareUrl = `http://localhost:5000/pin/${digipin}`; // Placeholder base URL for now
@@ -192,11 +193,11 @@ async function fetchDigipinAndDisplayMap(latitude, longitude, accuracy = null) {
           });
         }
 
-        const qrButton = document.getElementById('popup-qr-btn');
-        const qrModal = document.getElementById('qr-modal');
-        const qrCodeDisplay = document.getElementById('qrcode-display');
+        const qrButton = popupElement.querySelector('#popup-qr-btn');
+        const qrModal = document.getElementById('qr-modal'); // Stays document.getElementById
+        const qrCodeDisplay = document.getElementById('qrcode-display'); // Stays document.getElementById
         const qrLinkText = document.getElementById('qr-link-text');
-        const qrModalCloseBtn = document.getElementById('qr-modal-close-btn');
+        const qrModalCloseBtn = document.getElementById('qr-modal-close-btn'); // Stays document.getElementById
 
         if (qrButton && qrModal && qrCodeDisplay && qrLinkText && qrModalCloseBtn) {
           qrButton.addEventListener('click', () => {
@@ -233,7 +234,7 @@ async function fetchDigipinAndDisplayMap(latitude, longitude, accuracy = null) {
           console.error('QR Code modal elements not found. QR functionality disabled for this popup.');
         }
 
-        const speakButton = document.getElementById('popup-speak-btn');
+        const speakButton = popupElement.querySelector('#popup-speak-btn');
         if (speakButton) {
           speakButton.addEventListener('click', () => {
             if ('speechSynthesis' in window) {
