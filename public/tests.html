@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Frontend Tests</title>
+  <link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.19.1.css">
+</head>
+<body>
+  <div id="qunit"></div>
+  <div id="qunit-fixture">
+    <!-- Your index.html content will be loaded here by tests if needed -->
+    <!-- Or, you can directly include parts of it for testing -->
+    <input type="text" id="address-input" />
+    <button id="search-button">Search</button>
+    <div id="map-container" style="height: 400px;"></div>
+    <div id="digipin-display"></div>
+  </div>
+  <script src="https://code.jquery.com/qunit/qunit-2.19.1.js"></script>
+
+  <!-- Include the actual script.js file that is being tested -->
+  <!-- Make sure Google Maps API is stubbed or handled appropriately for tests -->
+  <script>
+    // Stub Google Maps API for testing if it's called during script load or DOM ready
+    if (typeof google === 'undefined') {
+      window.google = {
+        maps: {
+          Geocoder: function() {
+            return {
+              geocode: function(request, callback) {
+                // Simulate a successful geocode for testing purposes
+                console.log("Mock Geocoder called with request:", request);
+                callback([{ geometry: { location: { lat: () => 10, lng: () => 20 } } }], 'OK');
+              }
+            };
+          },
+          // Add other parts of google.maps API if your script uses them directly on load
+        }
+      };
+    }
+    // Stub Leaflet's L object if parts of it are accessed globally by script.js on load
+    if (typeof L === 'undefined') {
+        window.L = {
+            map: function() {
+                return {
+                    setView: function() { return this; },
+                    addLayer: function() { return this; }
+                };
+            },
+            tileLayer: function() {
+                return { addTo: function() {} };
+            },
+            marker: function() {
+                return {
+                    addTo: function() { return this; },
+                    bindPopup: function() { return this; },
+                    openPopup: function() { return this; }
+                };
+            }
+        };
+    }
+  </script>
+  <script src="script.js"></script> <!-- The actual script to test -->
+  <script src="tests.js"></script>   <!-- The QUnit tests -->
+</body>
+</html>
