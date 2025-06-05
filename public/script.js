@@ -16,21 +16,48 @@ let geocoderControl;
 
 // Helper function to check if a point is within India's boundary
 function isPointInIndia(latitude, longitude) {
-  if (!INDIA_GEOJSON_DATA || !INDIA_GEOJSON_DATA.features || INDIA_GEOJSON_DATA.features.length === 0) {
-    console.error("India GeoJSON data is not loaded or invalid for isPointInIndia check.");
-    return false; // Failsafe: if data is missing, consider it outside
+  console.log(`isPointInIndia: Checking lat: ${latitude}, lng: ${longitude}`);
+
+  if (!INDIA_GEOJSON_DATA) { // Combined null/undefined check for INDIA_GEOJSON_DATA itself
+    console.error("isPointInIndia: INDIA_GEOJSON_DATA is null or undefined.");
+    return false;
   }
-  const indiaFeature = INDIA_GEOJSON_DATA.features[0];
-  // console.log("Geometry type being used:", JSON.stringify(indiaFeature.geometry.type)); // Retained for debugging if needed
+
+  console.log('isPointInIndia: INDIA_GEOJSON_DATA type:', INDIA_GEOJSON_DATA.type);
+  if (INDIA_GEOJSON_DATA.type === 'FeatureCollection') {
+    console.log('isPointInIndia: FeatureCollection length:', INDIA_GEOJSON_DATA.features ? INDIA_GEOJSON_DATA.features.length : 'undefined features');
+  }
+
+  if (!INDIA_GEOJSON_DATA.features || INDIA_GEOJSON_DATA.features.length === 0) {
+    console.error("isPointInIndia: INDIA_GEOJSON_DATA.features is not loaded or is empty.");
+    return false; // Failsafe: if data is missing features, consider it outside
+  }
+
+  const featureOrGeometry = INDIA_GEOJSON_DATA.features[0]; // This is the Feature object
+  let geometryForCheck = null;
+
+  if (featureOrGeometry && featureOrGeometry.geometry) {
+    console.log('isPointInIndia: Geometry type for check:', featureOrGeometry.geometry.type);
+    geometryForCheck = featureOrGeometry.geometry;
+  } else if (featureOrGeometry && featureOrGeometry.type === 'Polygon') { // Directly a Polygon geometry
+    console.log('isPointInIndia: Attempting to use feature directly as Polygon, type:', featureOrGeometry.type);
+    geometryForCheck = featureOrGeometry;
+  } else if (featureOrGeometry && featureOrGeometry.type === 'MultiPolygon') { // Directly a MultiPolygon geometry
+    console.log('isPointInIndia: Attempting to use feature directly as MultiPolygon, type:', featureOrGeometry.type);
+    geometryForCheck = featureOrGeometry;
+  } else {
+    console.error('isPointInIndia: No valid geometry found in INDIA_GEOJSON_DATA.features[0]');
+    return false;
+  }
 
   const point = turf.point([longitude, latitude]); // Turf.js expects [lng, lat]
-  const isInside = turf.booleanPointInPolygon(point, indiaFeature.geometry);
+  const isInside = turf.booleanPointInPolygon(point, geometryForCheck);
 
   // Debugging test case for Delhi (can be removed or commented out in production)
-  if (typeof turf !== 'undefined' && INDIA_GEOJSON_DATA && INDIA_GEOJSON_DATA.features[0] && INDIA_GEOJSON_DATA.features[0].geometry) {
-    // console.log("Test with Delhi (should be true):", turf.booleanPointInPolygon(turf.point([77.216721, 28.644800]), INDIA_GEOJSON_DATA.features[0].geometry));
+  if (typeof turf !== 'undefined' && geometryForCheck) { // Check geometryForCheck for safety
+    // console.log("Test with Delhi (should be true):", turf.booleanPointInPolygon(turf.point([77.216721, 28.644800]), geometryForCheck));
   } else {
-    // console.error("Turf.js or INDIA_GEOJSON_DATA not properly initialized for Delhi test.");
+    // console.error("Turf.js or geometryForCheck not properly initialized for Delhi test.");
   }
   return isInside;
 }
@@ -81,6 +108,17 @@ async function fetchDigipinAndDisplayMap(latitude, longitude) {
 }
 
 function initializeMapFeatures() {
+  // Temporary test with user-provided coordinates
+  if (INDIA_GEOJSON_DATA) { // Ensure data is loaded
+    console.log("--- Test Case 1 (User-provided) ---");
+    isPointInIndia(21.858226543132226, 77.73925781250001);
+    console.log("--- End Test Case 1 ---");
+
+    console.log("--- Test Case 2 (User-provided) ---");
+    isPointInIndia(22.75215845553594, 77.34375000000001);
+    console.log("--- End Test Case 2 ---");
+  }
+
   if (!INDIA_GEOJSON_DATA) {
     console.error("India GeoJSON data not loaded. Cannot initialize map features.");
     // Optionally, display an error to the user on the page
