@@ -66,7 +66,28 @@ function isPointInIndia(latitude, longitude) {
   return false; // Point not found in any of the features
 }
 
-async function fetchDigipinAndDisplayMap(latitude, longitude) {
+function getPopupContentHTML(digipin, latitude, longitude, accuracy) {
+  const latitude_formatted = parseFloat(latitude).toFixed(6);
+  const longitude_formatted = parseFloat(longitude).toFixed(6);
+  const accuracy_formatted = accuracy ? `${parseFloat(accuracy).toFixed(1)} m` : 'N/A';
+
+  return `
+    <div class="custom-popup">
+        <h4>Your DIGIPIN</h4>
+        <p class="digipin-value">${digipin}</p>
+        <p class="coords">Lat: ${latitude_formatted}, Lon: ${longitude_formatted}</p>
+        <p class="accuracy">Location accuracy: ${accuracy_formatted}</p>
+        <div class="popup-actions">
+            <button id="popup-copy-btn" class="popup-action-button" title="Copy">📋 Copy</button>
+            <button id="popup-share-btn" class="popup-action-button" title="Share">🔗 Share</button>
+            <button id="popup-qr-btn" class="popup-action-button" title="QR Code">🏁 QR</button>
+            <button id="popup-speak-btn" class="popup-action-button" title="Read Aloud">🔊 Speak</button>
+        </div>
+    </div>
+  `;
+}
+
+async function fetchDigipinAndDisplayMap(latitude, longitude, accuracy = null) {
   const digipinDisplay = document.getElementById('digipin-display');
   try {
     const response = await fetch(`${API_BASE_URL}/api/digipin/encode?latitude=${latitude}&longitude=${longitude}`);
@@ -101,9 +122,140 @@ async function fetchDigipinAndDisplayMap(latitude, longitude) {
         }
     });
 
-    L.marker([latitude, longitude]).addTo(map)
-      .bindPopup('DIGIPIN: ' + digipin)
-      .openPopup();
+    const marker = L.marker([latitude, longitude]).addTo(map);
+    const htmlContent = getPopupContentHTML(digipin, latitude, longitude, accuracy);
+    marker.bindPopup(htmlContent).openPopup();
+
+    marker.on('popupopen', function (e) {
+        // 'e.popup' gives access to the popup DOM element if needed,
+        // but document.getElementById should work as IDs are unique.
+        console.log('Popup opened. Setting up button listeners...');
+
+        const copyButton = document.getElementById('popup-copy-btn');
+        if (copyButton) {
+          copyButton.addEventListener('click', () => {
+            const lat_formatted = parseFloat(latitude).toFixed(6);
+            const lon_formatted = parseFloat(longitude).toFixed(6);
+            const acc_formatted = accuracy ? `${parseFloat(accuracy).toFixed(1)} m` : 'N/A';
+            const textToCopy = `Your DIGIPIN: ${digipin}\nCoordinates: ${lat_formatted}, ${lon_formatted}\nLocation accuracy: ${acc_formatted}`;
+
+            navigator.clipboard.writeText(textToCopy)
+              .then(() => {
+                copyButton.textContent = '📋 Copied!';
+                setTimeout(() => {
+                  copyButton.textContent = '📋 Copy';
+                }, 2000);
+              })
+              .catch(err => {
+                console.error('Error copying text: ', err);
+                alert('Failed to copy details. See console for error.');
+              });
+          });
+        }
+
+        const shareButton = document.getElementById('popup-share-btn');
+        if (shareButton) {
+          shareButton.addEventListener('click', async () => {
+            const shareUrl = `http://localhost:5000/pin/${digipin}`; // Placeholder base URL for now
+            const shareData = {
+              title: 'My DIGIPIN Location',
+              text: `Check out this location: ${digipin}`,
+              url: shareUrl,
+            };
+
+            if (navigator.share) {
+              try {
+                await navigator.share(shareData);
+                console.log('DIGIPIN shared successfully');
+              } catch (err) {
+                console.error('Error sharing DIGIPIN:', err);
+                // Fallback if share fails, or just inform user.
+                // For this example, we'll try to copy the URL as a fallback.
+                try {
+                  await navigator.clipboard.writeText(shareUrl);
+                  alert('Sharing failed, link copied to clipboard: ' + shareUrl);
+                } catch (copyErr) {
+                  console.error('Error copying share URL to clipboard:', copyErr);
+                  alert('Failed to share or copy link.');
+                }
+              }
+            } else {
+              // Fallback if navigator.share is not supported
+              try {
+                await navigator.clipboard.writeText(shareUrl);
+                alert('Sharing not supported, link copied to clipboard: ' + shareUrl);
+              } catch (err) {
+                console.error('Error copying share URL to clipboard:', err);
+                alert('Failed to copy link. Please copy it manually: ' + shareUrl);
+              }
+            }
+          });
+        }
+
+        const qrButton = document.getElementById('popup-qr-btn');
+        const qrModal = document.getElementById('qr-modal');
+        const qrCodeDisplay = document.getElementById('qrcode-display');
+        const qrLinkText = document.getElementById('qr-link-text');
+        const qrModalCloseBtn = document.getElementById('qr-modal-close-btn');
+
+        if (qrButton && qrModal && qrCodeDisplay && qrLinkText && qrModalCloseBtn) {
+          qrButton.addEventListener('click', () => {
+            if (typeof QRCode === 'undefined') {
+              alert('QR Code library not loaded.');
+              return;
+            }
+            const shareUrl = `http://localhost:5000/pin/${digipin}`; // Consistent with share functionality
+
+            qrCodeDisplay.innerHTML = ''; // Clear previous QR code
+            new QRCode(qrCodeDisplay, {
+              text: shareUrl,
+              width: 200,
+              height: 200,
+              colorDark : "#000000",
+              colorLight : "#ffffff",
+              correctLevel : QRCode.CorrectLevel.H
+            });
+            qrLinkText.textContent = shareUrl;
+            qrModal.style.display = 'block';
+          });
+
+          qrModalCloseBtn.addEventListener('click', () => {
+            qrModal.style.display = 'none';
+          });
+
+          // Optional: Close modal if backdrop is clicked
+          qrModal.addEventListener('click', (event) => {
+            if (event.target == qrModal) {
+              qrModal.style.display = 'none';
+            }
+          });
+        } else {
+          console.error('QR Code modal elements not found. QR functionality disabled for this popup.');
+        }
+
+        const speakButton = document.getElementById('popup-speak-btn');
+        if (speakButton) {
+          speakButton.addEventListener('click', () => {
+            if ('speechSynthesis' in window) {
+              const lat_formatted = parseFloat(latitude).toFixed(2); // Shorter format for speech
+              const lon_formatted = parseFloat(longitude).toFixed(2);
+              let acc_speech = 'Accuracy not available.';
+              if (accuracy) {
+                acc_speech = `Accuracy: ${parseFloat(accuracy).toFixed(0)} meters.`;
+              }
+
+              const textToSpeak = `DIGIPIN: ${digipin.replace(/-/g, ' ')}. Latitude: ${lat_formatted}. Longitude: ${lon_formatted}. ${acc_speech}`;
+
+              window.speechSynthesis.cancel(); // Cancel any ongoing speech
+              const utterance = new SpeechSynthesisUtterance(textToSpeak);
+              utterance.lang = 'en-IN'; // Prioritize Indian English if available
+              window.speechSynthesis.speak(utterance);
+            } else {
+              alert('Sorry, your browser does not support text-to-speech.');
+            }
+          });
+        }
+    });
 
   } catch (error) {
     console.error('Error fetching DIGIPIN or displaying map:', error);
@@ -204,8 +356,9 @@ document.addEventListener('DOMContentLoaded', () => {
           (position) => {
             const latitude = position.coords.latitude;
             const longitude = position.coords.longitude;
+            const accuracyValue = position.coords.accuracy; // Get accuracy
             if (isPointInIndia(latitude, longitude)) {
-              fetchDigipinAndDisplayMap(latitude, longitude);
+              fetchDigipinAndDisplayMap(latitude, longitude, accuracyValue); // Pass accuracy
             } else {
               alert("Your current location appears to be outside India. DIGIPINs are generated for locations within India.");
               if (digipinDisplay) digipinDisplay.textContent = "Location outside India.";

@@ -114,3 +114,116 @@ button:hover {
      padding: 8px !important; /* Override Leaflet's default if necessary */
      margin-bottom: 0 !important; /* Geocoder has its own structure */
 }
+
+/* QR Code Modal */
+.modal {
+    position: fixed;
+    z-index: 1000; /* Ensure it's on top */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4); /* Dim background */
+    /* display: none; /* Initially hidden - controlled by inline style or JS */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* Centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 300px; /* Adjust as needed */
+    text-align: center;
+    position: relative;
+    border-radius: 5px;
+}
+
+.close-button {
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#qrcode-display {
+    margin: 20px auto; /* Center the QR code div */
+    width: fit-content; /* Ensure div size is determined by QR code */
+}
+#qrcode-display img { /* qrcode.js generates an img or canvas */
+    display: block; /* Helps with centering if it's an img */
+    margin: auto;
+}
+
+/* Custom Leaflet Popup Styling */
+.custom-popup {
+    padding: 5px; /* Add some padding inside the popup */
+    max-width: 280px; /* Max width for the popup content */
+    text-align: left;
+    line-height: 1.4;
+}
+
+.custom-popup h4 {
+    margin-top: 5px;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    color: #333;
+}
+
+.custom-popup p {
+    margin: 4px 0;
+}
+
+.custom-popup .digipin-value {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #007bff; /* Primary color for the DIGIPIN itself */
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.custom-popup .coords,
+.custom-popup .accuracy {
+    font-size: 0.85em;
+    color: #555; /* Muted color for less prominent info */
+}
+
+.custom-popup .popup-actions {
+    display: flex;
+    flex-wrap: wrap; /* Allow buttons to wrap */
+    gap: 8px; /* Spacing between buttons */
+    justify-content: center; /* Center buttons if they don't fill the row */
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #eee; /* Separator line */
+}
+
+.custom-popup .popup-action-button {
+    padding: 6px 10px;
+    margin: 0; /* Use gap for spacing */
+    border: 1px solid #ccc;
+    background-color: #f0f0f0;
+    color: #333; /* Explicitly set text color for buttons */
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 0.9em; /* Slightly smaller font for action buttons */
+    text-align: center;
+    flex-grow: 1; /* Allow buttons to grow if space allows, or use flex-basis */
+    min-width: 60px; /* Minimum width for each button */
+    width: auto; /* Override the 100% width from global button style */
+}
+
+.custom-popup .popup-action-button:hover {
+    background-color: #e0e0e0; /* Slightly darker on hover */
+    border-color: #bbb;
+}

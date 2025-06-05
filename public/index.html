@@ -55,6 +55,16 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs@gh-pages/qrcode.min.js"></script>
   <script src="script.js"></script>
+
+  <div id="qr-modal" class="modal" style="display:none;">
+      <div class="modal-content">
+          <span class="close-button" id="qr-modal-close-btn">&times;</span>
+          <h4>Scan QR Code</h4>
+          <div id="qrcode-display"></div>
+          <p id="qr-link-text"></p>
+      </div>
+  </div>
 </body>
 </html>
