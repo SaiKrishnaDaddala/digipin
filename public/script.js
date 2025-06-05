@@ -30,36 +30,40 @@ function isPointInIndia(latitude, longitude) {
 
   if (!INDIA_GEOJSON_DATA.features || INDIA_GEOJSON_DATA.features.length === 0) {
     console.error("isPointInIndia: INDIA_GEOJSON_DATA.features is not loaded or is empty.");
-    return false; // Failsafe: if data is missing features, consider it outside
-  }
-
-  const featureOrGeometry = INDIA_GEOJSON_DATA.features[0]; // This is the Feature object
-  let geometryForCheck = null;
-
-  if (featureOrGeometry && featureOrGeometry.geometry) {
-    console.log('isPointInIndia: Geometry type for check:', featureOrGeometry.geometry.type);
-    geometryForCheck = featureOrGeometry.geometry;
-  } else if (featureOrGeometry && featureOrGeometry.type === 'Polygon') { // Directly a Polygon geometry
-    console.log('isPointInIndia: Attempting to use feature directly as Polygon, type:', featureOrGeometry.type);
-    geometryForCheck = featureOrGeometry;
-  } else if (featureOrGeometry && featureOrGeometry.type === 'MultiPolygon') { // Directly a MultiPolygon geometry
-    console.log('isPointInIndia: Attempting to use feature directly as MultiPolygon, type:', featureOrGeometry.type);
-    geometryForCheck = featureOrGeometry;
-  } else {
-    console.error('isPointInIndia: No valid geometry found in INDIA_GEOJSON_DATA.features[0]');
     return false;
   }
 
-  const point = turf.point([longitude, latitude]); // Turf.js expects [lng, lat]
-  const isInside = turf.booleanPointInPolygon(point, geometryForCheck);
+  const point = turf.point([longitude, latitude]); // Create point once
 
-  // Debugging test case for Delhi (can be removed or commented out in production)
-  if (typeof turf !== 'undefined' && geometryForCheck) { // Check geometryForCheck for safety
-    // console.log("Test with Delhi (should be true):", turf.booleanPointInPolygon(turf.point([77.216721, 28.644800]), geometryForCheck));
-  } else {
-    // console.error("Turf.js or geometryForCheck not properly initialized for Delhi test.");
+  console.log("isPointInIndia: Iterating through features for point-in-polygon check...");
+  for (let i = 0; i < INDIA_GEOJSON_DATA.features.length; i++) {
+    const feature = INDIA_GEOJSON_DATA.features[i];
+
+    if (!feature || !feature.geometry) {
+      console.warn(`isPointInIndia: Skipping feature at index ${i} due to missing geometry.`);
+      continue;
+    }
+
+    let geometryForCheck = feature.geometry;
+    console.log(`isPointInIndia: Checking feature ${i}, type: ${geometryForCheck.type}`);
+
+    if (geometryForCheck.type === 'Polygon' || geometryForCheck.type === 'MultiPolygon') {
+      if (turf.booleanPointInPolygon(point, geometryForCheck)) {
+        console.log(`isPointInIndia: Point found in feature ${i} (${geometryForCheck.type}).`);
+        // Debugging test case for Delhi (adjust if necessary, or remove for general use)
+        // This specific test might be less relevant here if not all features are Delhi.
+        if (typeof turf !== 'undefined' && geometryForCheck) {
+          // console.log("Delhi test on current feature:", turf.booleanPointInPolygon(turf.point([77.216721, 28.644800]), geometryForCheck));
+        }
+        return true; // Point is in this feature
+      }
+    } else {
+      console.warn(`isPointInIndia: Skipping feature ${i} due to unsupported geometry type: ${geometryForCheck.type}`);
+    }
   }
-  return isInside;
+
+  console.log("isPointInIndia: Point not found in any features.");
+  return false; // Point not found in any of the features
 }
 
 async function fetchDigipinAndDisplayMap(latitude, longitude) {
