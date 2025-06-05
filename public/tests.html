@@ -8,58 +8,85 @@
 <body>
   <div id="qunit"></div>
   <div id="qunit-fixture">
-    <!-- Your index.html content will be loaded here by tests if needed -->
-    <!-- Or, you can directly include parts of it for testing -->
-    <input type="text" id="address-input" />
-    <button id="search-button">Search</button>
-    <div id="map-container" style="height: 400px;"></div>
-    <div id="digipin-display"></div>
+    <!-- Updated fixture reflecting new UI structure from index.html's controls-container -->
+    <div id="controls-container">
+      <button id="use-location-button">Use My Location</button>
+      <input type="text" id="digipin-input" placeholder="Enter DIGIPIN">
+      <button id="decode-button">Decode DIGIPIN</button>
+      <input type="number" id="lat-input" placeholder="Latitude" step="any">
+      <input type="number" id="lon-input" placeholder="Longitude" step="any">
+      <button id="coords-to-digipin-button">Get DIGIPIN from Coords</button>
+      <div id="digipin-display">[DIGIPIN will appear here]</div>
+    </div>
+    <div id="map-container" style="height: 100px;"></div> <!-- Basic map container for tests -->
   </div>
+
   <script src="https://code.jquery.com/qunit/qunit-2.19.1.js"></script>
 
-  <!-- Include the actual script.js file that is being tested -->
-  <!-- Make sure Google Maps API is stubbed or handled appropriately for tests -->
   <script>
-    // Stub Google Maps API for testing if it's called during script load or DOM ready
-    if (typeof google === 'undefined') {
-      window.google = {
-        maps: {
-          Geocoder: function() {
-            return {
-              geocode: function(request, callback) {
-                // Simulate a successful geocode for testing purposes
-                console.log("Mock Geocoder called with request:", request);
-                callback([{ geometry: { location: { lat: () => 10, lng: () => 20 } } }], 'OK');
-              }
-            };
-          },
-          // Add other parts of google.maps API if your script uses them directly on load
-        }
-      };
-    }
-    // Stub Leaflet's L object if parts of it are accessed globally by script.js on load
-    if (typeof L === 'undefined') {
-        window.L = {
-            map: function() {
-                return {
-                    setView: function() { return this; },
-                    addLayer: function() { return this; }
-                };
-            },
-            tileLayer: function() {
-                return { addTo: function() {} };
-            },
-            marker: function() {
-                return {
-                    addTo: function() { return this; },
-                    bindPopup: function() { return this; },
-                    openPopup: function() { return this; }
-                };
+    // Mock Leaflet (L) and its components
+    window.L = {
+      map: function(id) {
+        console.log('Mock L.map called with id:', id);
+        return {
+          setView: function() { console.log('Mock map.setView called'); return this; },
+          addLayer: function() { console.log('Mock map.addLayer called'); return this; },
+          on: function(event, handler) { console.log('Mock map.on("'+event+'") called'); if(event === 'click') {this._mapClickHandler = handler;} return this; }, // Store click handler
+          eachLayer: function(callback) { console.log('Mock map.eachLayer called'); /* Simulate no existing markers */ },
+          removeLayer: function() { console.log('Mock map.removeLayer called'); return this; },
+          // Simulate click event for testing
+          _simulateClick: function(lat, lng) {
+            if (this._mapClickHandler) {
+              this._mapClickHandler({ latlng: { lat: lat, lng: lng } });
             }
+          }
         };
-    }
+      },
+      tileLayer: function() {
+        return { addTo: function() { console.log('Mock L.tileLayer.addTo called'); } };
+      },
+      marker: function() {
+        return {
+          addTo: function() { console.log('Mock L.marker.addTo called'); return this; },
+          bindPopup: function() { console.log('Mock L.marker.bindPopup called'); return this; },
+          openPopup: function() { console.log('Mock L.marker.openPopup called'); return this; }
+        };
+      },
+      Control: {
+        geocoder: function(options) {
+          console.log('Mock L.Control.geocoder called');
+          return {
+            on: function(event, handler) { console.log('Mock geocoder.on("'+event+'") called'); if(event === 'markgeocode') {this._geocodeHandler = handler;} return this; },
+            addTo: function() { console.log('Mock geocoder.addTo called'); return this; },
+            // Simulate geocode event for testing
+            _simulateGeocode: function(lat, lng, name) {
+              if (this._geocodeHandler) {
+                this._geocodeHandler({ geocode: { name: name, center: { lat: lat, lng: lng } } });
+              }
+            }
+          };
+        }
+      }
+    };
+
+    // Mock navigator.geolocation
+    window.navigator.geolocation = {
+      getCurrentPosition: function(successCallback, errorCallback) {
+        console.log('Mock navigator.geolocation.getCurrentPosition called');
+        if (this._shouldSucceed) {
+          successCallback({ coords: { latitude: this._lat, longitude: this._lng } });
+        } else {
+          errorCallback({ code: this._errorCode || 1, message: "Mock geolocation error" });
+        }
+      },
+      _shouldSucceed: true,
+      _lat: 0, _lng: 0, _errorCode: 1,
+      _setMockPosition: function(lat, lng) { this._lat = lat; this._lng = lng; this._shouldSucceed = true; },
+      _setMockError: function(code) { this._errorCode = code; this._shouldSucceed = false; }
+    };
   </script>
-  <script src="script.js"></script> <!-- The actual script to test -->
-  <script src="tests.js"></script>   <!-- The QUnit tests -->
+
+  <script src="script.js"></script>
+  <script src="tests.js"></script>
 </body>
 </html>

@@ -1,0 +1,115 @@
+/* public/style.css */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  color: #333;
+}
+
+header {
+  background-color: #333;
+  color: white;
+  padding: 1em;
+  text-align: center;
+}
+
+main {
+  display: flex;
+  flex-grow: 1;
+  overflow: hidden; /* Prevent scrollbars from main flex container */
+}
+
+#controls-container {
+  width: 350px; /* Fixed width for controls panel */
+  padding: 1em;
+  background-color: #fff;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  overflow-y: auto; /* Allow scrolling if controls exceed height */
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Space between control groups */
+}
+
+.control-group {
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
+
+.control-group h3 {
+  margin-top: 0;
+  font-size: 1.1em;
+  color: #555;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+}
+
+#map-container {
+  flex-grow: 1; /* Map takes remaining space */
+  height: 100%; /* Full height of the main container's flex item part */
+}
+
+input[type="text"],
+input[type="number"] {
+  width: calc(100% - 22px); /* Account for padding and border */
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1em;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+#digipin-display {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  text-align: center;
+  font-weight: bold;
+  min-height: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  main {
+    flex-direction: column;
+  }
+  #controls-container {
+    width: 100%;
+    height: auto; /* Adjust height for column layout */
+    max-height: 50vh; /* Example: limit height and enable scroll */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  #map-container {
+    height: 50vh; /* Example: adjust map height */
+  }
+}
+
+/* Leaflet Geocoder input specific styling if needed */
+.leaflet-control-geocoder-form input {
+     width: calc(100% - 30px); /* Adjust if default is too wide/small */
+     padding: 8px !important; /* Override Leaflet's default if necessary */
+     margin-bottom: 0 !important; /* Geocoder has its own structure */
+}
