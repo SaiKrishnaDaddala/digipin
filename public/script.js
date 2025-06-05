@@ -1,3 +1,10 @@
+// public/script.js
+// Define the base URL for API calls.
+// For local development or if using Cloudflare Pages Functions to proxy, this can be ''.
+// For a deployed worker without Pages proxy, set this to your worker's URL:
+// e.g., const API_BASE_URL = 'https://your-worker-name.your-account.workers.dev';
+const API_BASE_URL = ''; // Defaults to relative paths
+
 let map;
 let geocoderControl; // Store the geocoder control instance
 
@@ -5,7 +12,8 @@ let geocoderControl; // Store the geocoder control instance
 async function fetchDigipinAndDisplayMap(latitude, longitude) {
   const digipinDisplay = document.getElementById('digipin-display');
   try {
-    const response = await fetch(`/api/digipin/encode?latitude=${latitude}&longitude=${longitude}`);
+    // Prepend API_BASE_URL to the fetch request
+    const response = await fetch(`${API_BASE_URL}/api/digipin/encode?latitude=${latitude}&longitude=${longitude}`);
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
@@ -147,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       try {
-        const response = await fetch(`/api/digipin/decode?digipin=${encodeURIComponent(digipinValue)}`);
+        const response = await fetch(`${API_BASE_URL}/api/digipin/decode?digipin=${encodeURIComponent(digipinValue)}`);
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
