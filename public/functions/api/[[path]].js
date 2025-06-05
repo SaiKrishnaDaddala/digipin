@@ -1,7 +1,7 @@
 // public/functions/api/[[path]].js
 
 // IMPORTANT: Replace this with your actual deployed DIGIPIN API Worker URL
-const DIGIPIN_API_WORKER_URL = 'https://digipin.saikrishnadaddala.workers.dev'; // Placeholder
+const DIGIPIN_API_WORKER_URL = 'https://digipin-api-worker.YOUR_ACCOUNT.workers.dev'; // Placeholder
 
 export async function onRequest(context) {
   // Get the original request's URL

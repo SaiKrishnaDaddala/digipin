@@ -53,6 +53,7 @@ main {
 #map-container {
   flex-grow: 1; /* Map takes remaining space */
   height: 100%; /* Full height of the main container's flex item part */
+  cursor: pointer; /* Change cursor to pointer for the map */
 }
 
 input[type="text"],

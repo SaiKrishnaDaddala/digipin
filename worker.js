@@ -1,16 +1,13 @@
 // worker.js
 import { Hono } from 'hono';
-import { cors } from 'hono/cors'; // Import CORS middleware if needed
-import { getDigiPin, getLatLngFromDigiPin } from './src/digipin'; // Assuming digipin.js is in src
+import { cors } from 'hono/cors';
+import { getDigiPin, getLatLngFromDigiPin } from './src/digipin';
 
 const app = new Hono();
 
-// Optional: Add CORS middleware if your Pages frontend will call this Worker from a different subdomain
-// or if you want to allow other origins.
-app.use('/api/*', cors()); // Apply CORS to all /api routes
+app.use('/api/v1/*', cors());
 
-// Define the /encode route (handles both GET and POST, similar to original Express setup)
-app.all('/api/digipin/encode', async (c) => {
+app.all('/api/v1/digipin/encode', async (c) => {
   let latitude, longitude;
   if (c.req.method === 'POST') {
     try {
@@ -20,7 +17,7 @@ app.all('/api/digipin/encode', async (c) => {
     } catch (e) {
       return c.json({ error: 'Invalid JSON in request body' }, 400);
     }
-  } else { // GET request
+  } else {
     latitude = parseFloat(c.req.query('latitude'));
     longitude = parseFloat(c.req.query('longitude'));
   }
@@ -37,8 +34,7 @@ app.all('/api/digipin/encode', async (c) => {
   }
 });
 
-// Define the /decode route (handles both GET and POST)
-app.all('/api/digipin/decode', async (c) => {
+app.all('/api/v1/digipin/decode', async (c) => {
   let digipin;
   if (c.req.method === 'POST') {
     try {
@@ -47,7 +43,7 @@ app.all('/api/digipin/decode', async (c) => {
     } catch (e) {
       return c.json({ error: 'Invalid JSON in request body' }, 400);
     }
-  } else { // GET request
+  } else {
     digipin = c.req.query('digipin');
   }
 
@@ -63,12 +59,10 @@ app.all('/api/digipin/decode', async (c) => {
   }
 });
 
-// Optional: Add a root route for basic info or health check for the worker URL
 app.get('/', (c) => {
-  return c.text('DIGIPIN API Worker is running. Use /api/digipin/encode or /api/digipin/decode endpoints.');
+  return c.text('DIGIPIN API Worker (v1) is running. Use /api/v1/digipin/encode or /api/v1/digipin/decode endpoints.');
 });
 
-// Hono's fetch export is what Cloudflare Workers expect
 export default {
   fetch: app.fetch
 };
