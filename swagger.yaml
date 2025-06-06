@@ -4,7 +4,17 @@ info:
   description: Encode and decode DIGIPIN based on latitude and longitude
   version: 1.0.0
 servers:
-  - url: http://localhost:5000/api
+  - url: https://{workerName}.{accountSubdomain}.workers.dev/api
+    description: Deployed Cloudflare Worker URL. Update the variables with your specific deployment details.
+    variables:
+      workerName:
+        default: digipin-api-worker
+        description: Your Cloudflare Worker's name.
+      accountSubdomain:
+        default: your-account-name
+        description: Your Cloudflare account's subdomain for workers.
+  - url: http://localhost:8787/api
+    description: Local development server (typically started with 'wrangler dev').
 
 paths:
   /digipin/encode:

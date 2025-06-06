@@ -1,4 +1,4 @@
-name = "digipin" # Replace with your desired worker name
+name = "digipin-api-worker" # Replace with your desired worker name
 main = "worker.js"         # Entry point for the worker (the Hono app)
 compatibility_date = "2023-12-01" # Use a recent compatibility date
 

@@ -165,7 +165,7 @@ async function fetchDigipinAndDisplayMap(latitude, longitude, accuracy = null) {
           console.log('Attaching click listener to #popup-share-btn');
           shareButton.addEventListener('click', async () => {
             console.log('#popup-share-btn CLICKED');
-            const shareUrl = `http://localhost:5000/pin/${digipin}`; // Placeholder base URL for now
+            const shareUrl = `${window.location.origin}/pin/${digipin}`;
             const shareData = {
               title: 'My DIGIPIN Location',
               text: `Check out this location: ${digipin}`,
@@ -219,7 +219,7 @@ async function fetchDigipinAndDisplayMap(latitude, longitude, accuracy = null) {
               alert('QR Code library not loaded.');
               return;
             }
-            const shareUrl = `http://localhost:5000/pin/${digipin}`; // Consistent with share functionality
+            const shareUrl = `${window.location.origin}/pin/${digipin}`; // Consistent with share functionality
 
             qrCodeDisplay.innerHTML = ''; // Clear previous QR code
             new QRCode(qrCodeDisplay, {
