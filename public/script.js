@@ -127,14 +127,16 @@ async function fetchDigipinAndDisplayMap(latitude, longitude, accuracy = null) {
     marker.bindPopup(htmlContent).openPopup();
 
     marker.on('popupopen', function (e) {
-        // 'e.popup' gives access to the popup DOM element if needed,
-        // but document.getElementById should work as IDs are unique.
-        console.log('Popup opened. Setting up button listeners...');
+        console.log('Popup opened. Popup DOM element:', e.popup.getElement());
         const popupElement = e.popup.getElement();
 
+        console.log('Attempting to find #popup-copy-btn');
         const copyButton = popupElement.querySelector('#popup-copy-btn');
+        console.log('#popup-copy-btn element:', copyButton);
         if (copyButton) {
+          console.log('Attaching click listener to #popup-copy-btn');
           copyButton.addEventListener('click', () => {
+            console.log('#popup-copy-btn CLICKED');
             const lat_formatted = parseFloat(latitude).toFixed(6);
             const lon_formatted = parseFloat(longitude).toFixed(6);
             const acc_formatted = accuracy ? `${parseFloat(accuracy).toFixed(1)} m` : 'N/A';
@@ -152,11 +154,17 @@ async function fetchDigipinAndDisplayMap(latitude, longitude, accuracy = null) {
                 alert('Failed to copy details. See console for error.');
               });
           });
+        } else {
+          console.error('#popup-copy-btn not found in popup!');
         }
 
+        console.log('Attempting to find #popup-share-btn');
         const shareButton = popupElement.querySelector('#popup-share-btn');
+        console.log('#popup-share-btn element:', shareButton);
         if (shareButton) {
+          console.log('Attaching click listener to #popup-share-btn');
           shareButton.addEventListener('click', async () => {
+            console.log('#popup-share-btn CLICKED');
             const shareUrl = `http://localhost:5000/pin/${digipin}`; // Placeholder base URL for now
             const shareData = {
               title: 'My DIGIPIN Location',
@@ -191,16 +199,22 @@ async function fetchDigipinAndDisplayMap(latitude, longitude, accuracy = null) {
               }
             }
           });
+        } else {
+          console.error('#popup-share-btn not found in popup!');
         }
 
+        console.log('Attempting to find #popup-qr-btn');
         const qrButton = popupElement.querySelector('#popup-qr-btn');
+        console.log('#popup-qr-btn element:', qrButton);
         const qrModal = document.getElementById('qr-modal'); // Stays document.getElementById
         const qrCodeDisplay = document.getElementById('qrcode-display'); // Stays document.getElementById
         const qrLinkText = document.getElementById('qr-link-text');
         const qrModalCloseBtn = document.getElementById('qr-modal-close-btn'); // Stays document.getElementById
 
         if (qrButton && qrModal && qrCodeDisplay && qrLinkText && qrModalCloseBtn) {
+          console.log('Attaching click listener to #popup-qr-btn');
           qrButton.addEventListener('click', () => {
+            console.log('#popup-qr-btn CLICKED');
             if (typeof QRCode === 'undefined') {
               alert('QR Code library not loaded.');
               return;
@@ -231,12 +245,19 @@ async function fetchDigipinAndDisplayMap(latitude, longitude, accuracy = null) {
             }
           });
         } else {
-          console.error('QR Code modal elements not found. QR functionality disabled for this popup.');
+          // Error for qrButton specifically, modal elements are checked in the if condition already
+          if (!qrButton) console.error('#popup-qr-btn not found in popup!');
+          // General log for other missing modal elements is already there
+          console.error('QR Code modal elements not found (or qrButton missing). QR functionality disabled for this popup.');
         }
 
+        console.log('Attempting to find #popup-speak-btn');
         const speakButton = popupElement.querySelector('#popup-speak-btn');
+        console.log('#popup-speak-btn element:', speakButton);
         if (speakButton) {
+          console.log('Attaching click listener to #popup-speak-btn');
           speakButton.addEventListener('click', () => {
+            console.log('#popup-speak-btn CLICKED');
             if ('speechSynthesis' in window) {
               const lat_formatted = parseFloat(latitude).toFixed(2); // Shorter format for speech
               const lon_formatted = parseFloat(longitude).toFixed(2);
