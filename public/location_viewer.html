@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGIPIN Location Viewer</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="viewer_style.css">
+</head>
+<body>
+    <div id="viewer-container">
+        <div id="info-panel">
+            <h3>Location Details</h3>
+            <p><strong>DIGIPIN:</strong> <span id="viewer-digipin">Loading...</span></p>
+            <p><strong>Latitude:</strong> <span id="viewer-lat">Loading...</span></p>
+            <p><strong>Longitude:</strong> <span id="viewer-lon">Loading...</span></p>
+            <!-- Accuracy is not directly available from decode, so it's omitted for now -->
+            <h4>Share this link (QR Code):</h4>
+            <div id="viewer-qrcode"></div>
+            <button id="open-google-maps-btn">Open in Google Maps</button>
+        </div>
+        <div id="map-viewer"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs@gh-pages/qrcode.min.js"></script>
+    <script src="viewer_script.js"></script>
+</body>
+</html>

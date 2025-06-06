@@ -28,6 +28,23 @@ app.get('/', (req, res) => { // Added root route
 // Swagger Docs Route
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
+// Route to serve the location viewer page
+app.get('/pin/:digipinId', (req, res) => {
+  // req.params.digipinId will contain the DIGIPIN from the URL.
+  // The client-side JavaScript in location_viewer.html will handle extracting it.
+  res.sendFile(path.join(__dirname, '../public', 'location_viewer.html'), (err) => {
+    if (err) {
+      // If location_viewer.html doesn't exist or other error, send a 404 or error.
+      // This is important because otherwise a generic HTML error page might be sent
+      // which could be confusing if the file is missing.
+      console.error('Error sending location_viewer.html:', err);
+      if (!res.headersSent) { // Check if headers were already sent
+         res.status(err.status || 500).send('Error loading page or page not found.');
+      }
+    }
+  });
+});
+
 // DIGIPIN API Routes
 app.use('/api/digipin', digipinRoutes);
 

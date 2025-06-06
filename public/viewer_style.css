@@ -1,0 +1,64 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: Arial, sans-serif;
+}
+
+#viewer-container {
+    display: flex;
+    height: 100vh; /* Full viewport height */
+}
+
+#info-panel {
+    width: 300px; /* Fixed width for the info panel */
+    padding: 20px;
+    background-color: #f0f0f0;
+    overflow-y: auto; /* Scroll if content overflows */
+    box-sizing: border-box; /* Include padding in width calculation */
+}
+
+#map-viewer {
+    flex-grow: 1; /* Takes remaining width */
+    height: 100%; /* Full height of the container */
+}
+
+#info-panel h3, #info-panel p, #info-panel h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+#info-panel h4 {
+    margin-top: 20px; /* Space above QR code title */
+}
+
+#viewer-qrcode {
+    width: 150px;  /* Desired width for QR code */
+    height: 150px; /* Desired height for QR code */
+    margin: 10px auto; /* Center the QR code block */
+}
+
+#viewer-qrcode img { /* qrcode.js generates an img tag */
+    display: block; /* Remove extra space below img if any */
+    width: 100% !important; /* Ensure image scales to container */
+    height: 100% !important;
+}
+
+
+#open-google-maps-btn {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-top: 20px;
+    background-color: #4CAF50; /* Green */
+    color: white;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    font-size: 1em;
+    border-radius: 4px;
+}
+
+#open-google-maps-btn:hover {
+    background-color: #45a049;
+}
