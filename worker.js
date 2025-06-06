@@ -3,29 +3,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { serveStatic } from 'hono/cloudflare-workers';
 
-// Import HTML content as raw strings.
-// Ensure your build process supports this (e.g., via ?raw suffix or similar).
-import indexHtml from 'public/index.html?raw';
-import locationViewerHtml from 'public/location_viewer.html?raw';
-import swaggerYamlContent from 'public/swagger.yaml?raw';
-
 import { getDigiPin, getLatLngFromDigiPin } from './src/digipin';
-
-// Note on HTML serving:
-// The index.html and location_viewer.html files are imported as raw strings and served directly.
-// This approach is used to prevent '__STATIC_CONTENT_MANIFEST' errors that can occur
-// when `serveStatic` from 'hono/cloudflare-workers' is used for HTML files in a
-// worker-only deployment (not as part of a Cloudflare Pages project with Functions).
-//
-// For this to work:
-// 1. The bundler used by Wrangler must support importing .html?raw files as strings.
-// 2. Static assets (CSS, JS, images, .geojson) referenced in these HTML files
-//    must be served correctly. If using Cloudflare Pages, Pages handles this from
-//    the 'public' directory. If this worker is deployed standalone and *must* serve
-//    these assets, additional routes or a different static asset strategy would be needed
-//    for those assets (e.g., importing them as raw strings too, or using KV store).
-//    The existing `serveStatic` calls for specific assets like /style.css might still
-//    face issues in a pure standalone worker if they also implicitly depend on the manifest.
 
 // IMPORTANT: In a production environment, the API key should be stored as a secret/environment variable.
 // For Cloudflare Workers, you would use c.env.GOOGLE_API_KEY.
@@ -126,7 +104,7 @@ const staticAssetPaths = [
 
 for (const assetPath of staticAssetPaths) {
     app.get(assetPath, (c) => {
-        const filePath = `.${assetPath}`; // Path relative to assets dir (public)
+        const filePath = `./public${assetPath}`; // Construct path relative to project root
         return serveStatic({ path: filePath })(c, () => {
             c.status(404);
             return c.text(`${assetPath} not found`);
@@ -135,21 +113,25 @@ for (const assetPath of staticAssetPaths) {
 }
 
 app.get('/swagger.yaml', (c) => {
-  c.header('Content-Type', 'text/yaml; charset=utf-8');
-  // Or: c.header('Content-Type', 'application/x-yaml; charset=utf-8');
-  return c.body(swaggerYamlContent);
+  // serveStatic should infer Content-Type for .yaml
+  return serveStatic({ path: './public/swagger.yaml' })(c, () => {
+    c.status(404);
+    return c.text('swagger.yaml not found');
+  });
 });
 
 app.get('/', (c) => {
-  // Try to serve index.html from the 'public' directory
-  // The path is relative to the project root where wrangler deploys from.
-  return c.html(indexHtml);
+  return serveStatic({ path: './public/index.html' })(c, () => {
+    c.status(404);
+    return c.text('index.html not found. API is available at /api/digipin/encode and /api/digipin/decode.');
+  });
 });
 
 app.get('/pin/:digipinId', (c) => {
-  // The digipinId is available via c.req.param('digipinId')
-  // location_viewer.html uses client-side JS to parse the URL and extract the ID.
-  return c.html(locationViewerHtml);
+  return serveStatic({ path: './public/location_viewer.html' })(c, () => {
+    c.status(404);
+    return c.text('location_viewer.html not found');
+  });
 });
 
 export default {
