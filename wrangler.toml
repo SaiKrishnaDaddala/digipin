@@ -1,9 +1,14 @@
-name = "digipin" # Replace with your desired worker name
+name = "digipin" # Your Cloudflare Pages project name, should match what CI expects
 main = "worker.js"         # Entry point for the worker (the Hono app)
 compatibility_date = "2023-12-01" # Use a recent compatibility date
 
-# [assets]
-# bucket = "./public"
+# Module rules for handling raw text imports
+[[build.module_rules]]
+type = "Text"
+globs = ["**/*.html", "**/*.yaml"]
+
+[assets]
+directory = "./public"
 
 # Optional: Add build configuration if you have a build step for your worker
 # (e.g., using webpack or esbuild). For a simple worker.js with imports,
@@ -17,6 +22,3 @@ compatibility_date = "2023-12-01" # Use a recent compatibility date
 
 # Example for enabling newer ES module features and other compatibility flags if needed:
 # compatibility_flags = [ "es_module_fallback" ]
-
-[observability.logs]
-enabled = true

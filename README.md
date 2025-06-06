@@ -122,11 +122,18 @@ GET /api/digipin/decode?digipin=4P3-JK8-52C9
 
 ### Interactive API Documentation
 
-Access the Swagger UI documentation at:
+The API's OpenAPI specification (swagger.yaml) can be accessed directly from the deployed worker:
 
 ```
-http://localhost:5000/api-docs
+{your_deployed_worker_url}/swagger.yaml
 ```
+For example, if your worker is deployed at `https://digipin-api.yourname.workers.dev`, the specification will be available at `https://digipin-api.yourname.workers.dev/swagger.yaml`.
+
+During local development (e.g., after running `wrangler dev`, which typically uses port 8787 for the worker), the specification can be accessed at:
+```
+http://localhost:8787/swagger.yaml
+```
+You can use this URL with any Swagger UI tool (e.g., a local instance, or online versions that allow loading external URLs) to view the interactive API documentation. The project does not currently serve a pre-rendered Swagger UI page (like `/api-docs/`) directly from the worker.
 
 ---
  

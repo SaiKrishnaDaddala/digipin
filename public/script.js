@@ -165,7 +165,7 @@ async function fetchDigipinAndDisplayMap(latitude, longitude, accuracy = null) {
           console.log('Attaching click listener to #popup-share-btn');
           shareButton.addEventListener('click', async () => {
             console.log('#popup-share-btn CLICKED');
-            const shareUrl = `http://localhost:5000/pin/${digipin}`; // Placeholder base URL for now
+            const shareUrl = `${window.location.origin}/pin/${digipin}`;
             const shareData = {
               title: 'My DIGIPIN Location',
               text: `Check out this location: ${digipin}`,
@@ -219,7 +219,7 @@ async function fetchDigipinAndDisplayMap(latitude, longitude, accuracy = null) {
               alert('QR Code library not loaded.');
               return;
             }
-            const shareUrl = `http://localhost:5000/pin/${digipin}`; // Consistent with share functionality
+            const shareUrl = `${window.location.origin}/pin/${digipin}`; // Consistent with share functionality
 
             qrCodeDisplay.innerHTML = ''; // Clear previous QR code
             new QRCode(qrCodeDisplay, {
@@ -489,6 +489,82 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchDigipinAndDisplayMap(latitude, longitude);
       } else {
         alert("The provided coordinates are outside India. Please provide coordinates within India.");
+      }
+    });
+  }
+
+  const googleAddressInput = document.getElementById('google-address-input');
+  const googleSearchButton = document.getElementById('google-address-search-button');
+  // const digipinDisplay = document.getElementById('digipin-display'); // Already defined above
+
+  if (googleSearchButton && googleAddressInput) {
+    googleSearchButton.addEventListener('click', async () => {
+      // Get fresh reference to digipinDisplay if it wasn't already global or passed in.
+      // It's fetched globally in DOMContentLoaded, so it's fine.
+
+      digipinDisplay.textContent = 'Searching for address...'; // Clear previous results/errors
+      googleSearchButton.disabled = true;
+      googleSearchButton.textContent = 'Searching...';
+
+      const address = googleAddressInput.value.trim();
+      if (address === '') {
+        digipinDisplay.textContent = 'Please enter an address.';
+        googleSearchButton.disabled = false;
+        googleSearchButton.textContent = 'Search Address';
+        return;
+      }
+
+      if (!map || !INDIA_GEOJSON_DATA) {
+        digipinDisplay.textContent = 'Map or boundary data is not ready. Please wait or refresh.';
+        googleSearchButton.disabled = false;
+        googleSearchButton.textContent = 'Search Address';
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/geocode?address=${encodeURIComponent(address)}`);
+        if (!response.ok) {
+          let errorMsg = `Google Geocoding failed: ${response.status}`;
+          try {
+            const errData = await response.json();
+            errorMsg = `Geocoding error: ${errData.error || response.statusText} ${errData.details || ''}`;
+          } catch (e) { /* Ignore if response is not JSON */ }
+          throw new Error(errorMsg);
+        }
+
+        const data = await response.json();
+
+        if (data.error) {
+          // Error from our backend API (e.g., address not found by Google, or Google API error)
+          digipinDisplay.textContent = `Geocoding error: ${data.error} ${data.details || ''}`;
+          throw new Error(`Geocoding error: ${data.error} ${data.details || ''}`); // Throw to be caught by outer catch for button reset
+        }
+
+        if (data.latitude && data.longitude) {
+          const lat = parseFloat(data.latitude);
+          const lon = parseFloat(data.longitude);
+          if (isPointInIndia(lat, lon)) {
+            fetchDigipinAndDisplayMap(lat, lon);
+            // digipinDisplay will be updated by fetchDigipinAndDisplayMap on its success/failure
+          } else {
+            digipinDisplay.textContent = "The address found by Google is outside India. DIGIPINs are generated for locations within India only.";
+            map.setView([20.5937, 78.9629], 5); // Reset map view
+            map.eachLayer((layer) => { if (layer instanceof L.Marker) { map.removeLayer(layer); } });
+            // No error thrown here, it's a valid outcome but outside bounds.
+          }
+        } else {
+          digipinDisplay.textContent = "Invalid response from geocoding service.";
+          throw new Error("Invalid response from geocoding service.");
+        }
+      } catch (error) {
+        console.error('Error during Google Geocoding:', error);
+        // Ensure digipinDisplay shows the error if it wasn't already set by a more specific error message.
+        if (!digipinDisplay.textContent.startsWith('Geocoding error:') && !digipinDisplay.textContent.startsWith('Invalid response from')) {
+             digipinDisplay.textContent = `Error: ${error.message}`;
+        }
+      } finally {
+        googleSearchButton.disabled = false;
+        googleSearchButton.textContent = 'Search Address';
       }
     });
   }
