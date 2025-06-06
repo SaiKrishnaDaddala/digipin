@@ -1,15 +1,33 @@
 // worker.js
+// functions/[[path]].js (formerly worker.js)
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { serveStatic } from 'hono/cloudflare-workers';
+// Remove serveStatic here, as Cloudflare Pages will handle static assets
 
-// Import HTML content as raw strings.
-// Ensure your build process supports this (e.g., via ?raw suffix or similar).
-import indexHtml from './public/index.html?raw';
-import locationViewerHtml from './public/location_viewer.html?raw';
-import swaggerYamlContent from './public/swagger.yaml?raw';
+// For HTML, instead of importing as raw strings, you can fetch them if absolutely necessary,
+// or better yet, serve them directly via Cloudflare Pages and have your worker only
+// return HTML for specific dynamic routes.
+// If you MUST return the HTML from the worker, you can keep them as raw strings
+// AND configure wrangler.toml correctly. Let's assume for now you want to keep them as strings.
 
-import { getDigiPin, getLatLngFromDigiPin } from './src/digipin';
+// Correcting the import paths relative to the worker.js's new location.
+// Assuming 'public' is still at the project root level.
+// NOTE: For Pages Functions, the build environment for the function itself
+// might not automatically resolve these raw imports without a specific
+// build configuration (like esbuild loaders for text files).
+// The most robust way for Pages Functions to include raw HTML is often
+// still to configure the build process to include them or fetch them.
+
+// Let's stick with the 'import as raw string' method for now, but be aware
+// that the `wrangler.toml` part is crucial. The path here is relative to
+// the FUNCTIONS directory.
+// Since 'public' is a sibling to 'functions', you need to go up one level and then down into 'public'.
+import indexHtml from '../public/index.html'; // Changed path and removed ?raw
+import locationViewerHtml from '../public/location_viewer.html'; // Changed path and removed ?raw
+import swaggerYamlContent from '../public/swagger.yaml'; // Changed path and removed ?raw
+
+import { getDigiPin, getLatLngFromDigiPin } from '../src/digipin'; // Adjust path for digipin.js
+
 
 // Note on HTML serving:
 // The index.html and location_viewer.html files are imported as raw strings and served directly.
@@ -134,24 +152,23 @@ for (const assetPath of staticAssetPaths) {
     });
 }
 
+// For swagger.yaml, if you want it served as a static asset, put it in 'public'.
+// If you want the worker to return its content, you can keep this.
 app.get('/swagger.yaml', (c) => {
-  c.header('Content-Type', 'text/yaml; charset=utf-8');
-  // Or: c.header('Content-Type', 'application/x-yaml; charset=utf-8');
-  return c.body(swaggerYamlContent);
+    c.header('Content-Type', 'text/yaml; charset=utf-8');
+    return c.body(swaggerYamlContent);
 });
 
+// These routes will return the HTML content directly from the worker.
+// This is fine if you want the worker to control these specific HTML responses.
 app.get('/', (c) => {
-  // Try to serve index.html from the 'public' directory
-  // The path is relative to the project root where wrangler deploys from.
-  return c.html(indexHtml);
+    return c.html(indexHtml);
 });
 
 app.get('/pin/:digipinId', (c) => {
-  // The digipinId is available via c.req.param('digipinId')
-  // location_viewer.html uses client-side JS to parse the URL and extract the ID.
-  return c.html(locationViewerHtml);
+    return c.html(locationViewerHtml);
 });
 
 export default {
-  fetch: app.fetch
+    fetch: app.fetch
 };
