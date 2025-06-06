@@ -4,6 +4,12 @@ info:
   description: Encode and decode DIGIPIN based on latitude and longitude
   version: 1.0.0
 servers:
+  - url: https://{customApiDomain}/api
+    description: Your custom domain for the API. Update the 'customApiDomain' variable with your domain name (e.g., api.example.com). The '/api' path is part of this server configuration.
+    variables:
+      customApiDomain:
+        default: api.yourcustomdomain.com
+        description: Enter your custom domain name here (e.g., api.example.com or my-service.example.com).
   - url: https://{workerName}.{accountSubdomain}.workers.dev/api
     description: Deployed Cloudflare Worker URL. Update the variables with your specific deployment details.
     variables:
