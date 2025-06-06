@@ -2,8 +2,8 @@ name = "digipin" # Replace with your desired worker name
 main = "worker.js"         # Entry point for the worker (the Hono app)
 compatibility_date = "2023-12-01" # Use a recent compatibility date
 
-[assets]
-bucket = "./public"
+# [assets]
+# bucket = "./public"
 
 # Optional: Add build configuration if you have a build step for your worker
 # (e.g., using webpack or esbuild). For a simple worker.js with imports,
