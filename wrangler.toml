@@ -1,7 +1,9 @@
-name = "digipin" # Replace with your desired worker name
+name = "digipin-api-worker" # Replace with your desired worker name
 main = "worker.js"         # Entry point for the worker (the Hono app)
 compatibility_date = "2023-12-01" # Use a recent compatibility date
-# assets = "public" # Specify the directory for static assets
+
+[assets]
+bucket = "./public"
 
 # Optional: Add build configuration if you have a build step for your worker
 # (e.g., using webpack or esbuild). For a simple worker.js with imports,
@@ -15,11 +17,3 @@ compatibility_date = "2023-12-01" # Use a recent compatibility date
 
 # Example for enabling newer ES module features and other compatibility flags if needed:
 # compatibility_flags = [ "es_module_fallback" ]
-
-
-# wrangler.toml (wrangler v3.88.0^)
-[observability.logs]
-enabled = true
-
-
-
