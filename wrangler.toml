@@ -1,24 +1,43 @@
-name = "digipin-api-worker" # Replace with your desired worker name
-main = "worker.js"         # Entry point for the worker (the Hono app)
-compatibility_date = "2023-12-01" # Use a recent compatibility date
+name = "digipin" # Your Cloudflare Pages project name, should match what CI expects
+# The `main` field is typically for a standalone Worker.
+# For Pages Functions, Wrangler automatically looks in the `functions` directory.
+# So, you might not need `main` if this `wrangler.toml` is purely for Pages.
+# If you run `wrangler deploy` outside of Pages CI, you'll still need `main`.
+# For Pages, the build command handles the bundling of functions.
 
-# Module rules for handling raw text imports
-[[build.module_rules]]
-type = "Text"
-globs = ["**/*.html", "**/*.yaml"]
+# If you want to use this wrangler.toml for `wrangler deploy` directly, keep `main`.
+# For Pages CI, the `functions` directory is auto-detected.
+main = "functions/[[path]].js" # Point to your Pages Function if deploying directly with wrangler
+compatibility_date = "2024-05-01" # Always use a recent compatibility date
 
-[assets]
-directory = "./public"
+# This section is critical for Pages Functions to understand your imports
+[build]
+command = "npm install && npx wrangler deploy --dry-run --outdir=.wrangler/tmp" # This is often handled by Cloudflare Pages CI directly. You might only need "npm install"
+# Cloudflare Pages typically sets its own build command.
+# If you want to customize the build, you might use an esbuild config,
+# but for raw text files, `text_globs` is often enough.
 
-# Optional: Add build configuration if you have a build step for your worker
-# (e.g., using webpack or esbuild). For a simple worker.js with imports,
-# wrangler might handle it automatically, but for more complex scenarios:
-# [build]
-# command = "npm run build-worker" # Example build command
-# upload.format = "modules"      # If your worker uses ES modules
+# This section tells Wrangler how to handle these specific file types
+# when they are imported as modules within your Worker/Function code.
+# The `[[build.upload.text_globs]]` mechanism is primarily for Workers.
+# For Pages Functions, the build system (esbuild) needs to be configured.
+# Let's try the `text_globs` approach first, as Wrangler for Pages Functions
+# often leverages parts of the Worker build pipeline.
 
-# If your worker needs KV, D1, R2, or other bindings, define them here.
-# For this DIGIPIN API, no external bindings are currently needed.
+[build.upload]
+format = "modules"
 
-# Example for enabling newer ES module features and other compatibility flags if needed:
-# compatibility_flags = [ "es_module_fallback" ]
+# Tell Wrangler to treat these files as plain text when imported
+[[build.upload.text_globs]]
+pattern = "public/*.html" # Match HTML files directly in public
+type = "text"
+
+[[build.upload.text_globs]]
+pattern = "public/*.yaml" # Match YAML files directly in public
+type = "text"
+
+# Assuming you also have a package.json and node_modules at the project root.
+# Add any environment variables here if you need them for local development,
+# but ensure they are set in Cloudflare Pages settings for deployment.
+# [vars]
+# GOOGLE_API_KEY = "your_dev_api_key_here"
