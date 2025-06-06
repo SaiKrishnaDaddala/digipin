@@ -1,13 +1,14 @@
 // worker.js
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { serveStatic } from 'hono/cloudflare-workers';
 import { getDigiPin, getLatLngFromDigiPin } from './src/digipin';
 
 const app = new Hono();
 
-app.use('/api/v1/*', cors());
+app.use('/api/digipin/*', cors()); // Path updated for CORS
 
-app.all('/api/v1/digipin/encode', async (c) => {
+app.all('/api/digipin/encode', async (c) => { // Path updated
   let latitude, longitude;
   if (c.req.method === 'POST') {
     try {
@@ -34,7 +35,7 @@ app.all('/api/v1/digipin/encode', async (c) => {
   }
 });
 
-app.all('/api/v1/digipin/decode', async (c) => {
+app.all('/api/digipin/decode', async (c) => { // Path updated
   let digipin;
   if (c.req.method === 'POST') {
     try {
@@ -59,8 +60,45 @@ app.all('/api/v1/digipin/decode', async (c) => {
   }
 });
 
+// Serve static assets
+const staticAssetPaths = [
+    '/style.css',
+    '/script.js',
+    '/viewer_style.css',
+    '/viewer_script.js',
+    '/india_boundary.geojson'
+];
+
+for (const assetPath of staticAssetPaths) {
+    app.get(assetPath, (c) => {
+        const filePath = `.${assetPath}`; // Path relative to assets dir (public)
+        return serveStatic({ path: filePath })(c, () => {
+            c.status(404);
+            return c.text(`${assetPath} not found`);
+        });
+    });
+}
+
 app.get('/', (c) => {
-  return c.text('DIGIPIN API Worker (v1) is running. Use /api/v1/digipin/encode or /api/v1/digipin/decode endpoints.');
+  // Try to serve index.html from the 'public' directory
+  // The path is relative to the project root where wrangler deploys from.
+  // Also, update the text message if index.html is not found or if serveStatic is removed later.
+  // For now, serveStatic handles it, but the text message in its fallback could be updated too.
+  // The primary root message if no static file is served:
+  // return c.text('DIGIPIN API Worker is running. Use /api/digipin/encode or /api/digipin/decode endpoints.');
+  return serveStatic({ path: './index.html' })(c, () => { // Path updated
+    c.status(404);
+    return c.text('index.html not found. API is available at /api/digipin/encode and /api/digipin/decode.');
+  });
+});
+
+app.get('/pin/:digipinId', (c) => {
+  // The digipinId is available via c.req.param('digipinId')
+  // Client-side JS in location_viewer.html will use the URL.
+  return serveStatic({ path: './location_viewer.html' })(c, () => { // Path updated
+    c.status(404);
+    return c.text('location_viewer.html not found');
+  });
 });
 
 export default {
