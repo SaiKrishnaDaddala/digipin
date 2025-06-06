@@ -124,8 +124,8 @@ async function fetchDigipinAndDisplayMap(latitude, longitude, accuracy = null) {
 
     const marker = L.marker([latitude, longitude]).addTo(map);
     const htmlContent = getPopupContentHTML(digipin, latitude, longitude, accuracy);
-    marker.bindPopup(htmlContent).openPopup();
 
+    // Define the popupopen handler first
     marker.on('popupopen', function (e) {
         console.log('Popup opened. Popup DOM element:', e.popup.getElement());
         const popupElement = e.popup.getElement();
@@ -206,12 +206,12 @@ async function fetchDigipinAndDisplayMap(latitude, longitude, accuracy = null) {
         console.log('Attempting to find #popup-qr-btn');
         const qrButton = popupElement.querySelector('#popup-qr-btn');
         console.log('#popup-qr-btn element:', qrButton);
-        const qrModal = document.getElementById('qr-modal'); // Stays document.getElementById
-        const qrCodeDisplay = document.getElementById('qrcode-display'); // Stays document.getElementById
+        // Modal elements are fetched here but listeners for close are set globally once.
+        const qrModal = document.getElementById('qr-modal');
+        const qrCodeDisplay = document.getElementById('qrcode-display');
         const qrLinkText = document.getElementById('qr-link-text');
-        const qrModalCloseBtn = document.getElementById('qr-modal-close-btn'); // Stays document.getElementById
 
-        if (qrButton && qrModal && qrCodeDisplay && qrLinkText && qrModalCloseBtn) {
+        if (qrButton && qrModal && qrCodeDisplay && qrLinkText) { // qrModalCloseBtn listener is set globally
           console.log('Attaching click listener to #popup-qr-btn');
           qrButton.addEventListener('click', () => {
             console.log('#popup-qr-btn CLICKED');
@@ -233,22 +233,9 @@ async function fetchDigipinAndDisplayMap(latitude, longitude, accuracy = null) {
             qrLinkText.textContent = shareUrl;
             qrModal.style.display = 'block';
           });
-
-          qrModalCloseBtn.addEventListener('click', () => {
-            qrModal.style.display = 'none';
-          });
-
-          // Optional: Close modal if backdrop is clicked
-          qrModal.addEventListener('click', (event) => {
-            if (event.target == qrModal) {
-              qrModal.style.display = 'none';
-            }
-          });
         } else {
-          // Error for qrButton specifically, modal elements are checked in the if condition already
           if (!qrButton) console.error('#popup-qr-btn not found in popup!');
-          // General log for other missing modal elements is already there
-          console.error('QR Code modal elements not found (or qrButton missing). QR functionality disabled for this popup.');
+          console.error('Some QR Code elements (button, modal, display, linkText) not found. QR functionality disabled for this popup.');
         }
 
         console.log('Attempting to find #popup-speak-btn');
@@ -278,6 +265,10 @@ async function fetchDigipinAndDisplayMap(latitude, longitude, accuracy = null) {
           });
         }
     });
+
+    // Then bind and open the popup
+    marker.bindPopup(htmlContent);
+    marker.openPopup();
 
   } catch (error) {
     console.error('Error fetching DIGIPIN or displaying map:', error);
@@ -361,6 +352,25 @@ async function loadIndiaBoundaryData() {
 
 document.addEventListener('DOMContentLoaded', () => {
   loadIndiaBoundaryData(); // Load GeoJSON first, then initialize map features
+
+  // QR Modal Close Logic (set up once globally)
+  const qrModal = document.getElementById('qr-modal');
+  const qrModalCloseBtn = document.getElementById('qr-modal-close-btn');
+
+  if (qrModal && qrModalCloseBtn) {
+    qrModalCloseBtn.addEventListener('click', () => {
+      qrModal.style.display = 'none';
+    });
+
+    // Optional: Close modal if backdrop is clicked
+    qrModal.addEventListener('click', (event) => {
+      if (event.target == qrModal) {
+        qrModal.style.display = 'none';
+      }
+    });
+  } else {
+    console.error("QR Modal or its close button not found in the main DOM. Modal closing might not work.");
+  }
 
   // Event listeners for controls that don't strictly depend on map/GeoJSON being loaded first
   // or can gracefully handle map not being ready (though current design initializes map).
