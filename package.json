@@ -16,6 +16,7 @@
     "digipin": "file:",
     "dotenv": "^16.4.7",
     "express": "^5.1.0",
+    "hono": "^4.7.11",
     "morgan": "^1.10.0",
     "swagger-ui-express": "^5.0.1",
     "yaml": "^2.7.1",

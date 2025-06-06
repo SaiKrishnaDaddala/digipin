@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>DIGIPIN Finder</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+  <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script> <!-- Added Turf.js -->
+  <link rel="stylesheet" href="style.css"> <!-- Link the new stylesheet -->
+</head>
+<body>
+  <header>
+    <h1>DIGIPIN Finder & Generator</h1>
+  </header>
+  <main>
+    <div id="controls-container">
+      <div class="control-group">
+        <h3>Search Address / Place</h3>
+        <!-- The Leaflet Geocoder will be added to the map, its search bar appears on the map. -->
+        <p style="text-align: center; font-size: 0.9em;">Use the search bar on the map (top-left) to find a location by address.</p>
+      </div>
+
+      <div class="control-group">
+        <h3>Use My Current Location</h3>
+        <button id="use-location-button">Get DIGIPIN for My Location</button>
+      </div>
+
+      <div class="control-group">
+        <h3>Get DIGIPIN by Clicking on Map</h3>
+        <p style="text-align: center; font-size: 0.9em;">Click anywhere on the map to select a point and generate its DIGIPIN.</p>
+      </div>
+
+      <div class="control-group">
+        <h3>Decode DIGIPIN</h3>
+        <input type="text" id="digipin-input" placeholder="Enter DIGIPIN (e.g., XXXX-XXX-XXX)">
+        <button id="decode-button">Decode & Show on Map</button>
+      </div>
+
+      <div class="control-group">
+        <h3>Get DIGIPIN from Coordinates</h3>
+        <input type="number" id="lat-input" placeholder="Latitude (e.g., 12.9716)" step="any">
+        <input type="number" id="lon-input" placeholder="Longitude (e.g., 77.5946)" step="any">
+        <button id="coords-to-digipin-button">Get DIGIPIN & Show on Map</button>
+      </div>
+
+      <div class="control-group">
+        <h3>Generated DIGIPIN</h3>
+        <div id="digipin-display">[DIGIPIN will appear here]</div>
+      </div>
+
+    </div>
+    <div id="map-container"></div>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs@gh-pages/qrcode.min.js"></script>
+  <script src="script.js"></script>
+
+  <div id="qr-modal" class="modal" style="display:none;">
+      <div class="modal-content">
+          <span class="close-button" id="qr-modal-close-btn">&times;</span>
+          <h4>Scan QR Code</h4>
+          <div id="qrcode-display"></div>
+          <p id="qr-link-text"></p>
+      </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,22 @@
+name = "digipin" # Replace with your desired worker name
+main = "worker.js"         # Entry point for the worker (the Hono app)
+compatibility_date = "2023-12-01" # Use a recent compatibility date
+
+# [assets]
+# bucket = "./public"
+
+# Optional: Add build configuration if you have a build step for your worker
+# (e.g., using webpack or esbuild). For a simple worker.js with imports,
+# wrangler might handle it automatically, but for more complex scenarios:
+# [build]
+# command = "npm run build-worker" # Example build command
+# upload.format = "modules"      # If your worker uses ES modules
+
+# If your worker needs KV, D1, R2, or other bindings, define them here.
+# For this DIGIPIN API, no external bindings are currently needed.
+
+# Example for enabling newer ES module features and other compatibility flags if needed:
+# compatibility_flags = [ "es_module_fallback" ]
+
+[observability.logs]
+enabled = true
