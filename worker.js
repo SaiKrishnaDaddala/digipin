@@ -4,9 +4,13 @@ import { cors } from 'hono/cors';
 import { serveStatic } from 'hono/cloudflare-workers';
 import { getDigiPin, getLatLngFromDigiPin } from './src/digipin';
 
+// IMPORTANT: In a production environment, the API key should be stored as a secret/environment variable.
+// For Cloudflare Workers, you would use c.env.GOOGLE_API_KEY.
+const GOOGLE_API_KEY = 'AIzaSyCL8d9QNWn_wV3CwTArXKzRGqMU5Vib5nc'; // Replace with c.env.GOOGLE_API_KEY in deployment
+
 const app = new Hono();
 
-app.use('/api/digipin/*', cors()); // Path updated for CORS
+app.use('/api/*', cors()); // Updated to cover all /api routes
 
 app.all('/api/digipin/encode', async (c) => { // Path updated
   let latitude, longitude;
@@ -32,6 +36,34 @@ app.all('/api/digipin/encode', async (c) => { // Path updated
     return c.json({ digipin: code });
   } catch (e) {
     return c.json({ error: e.message }, 400);
+  }
+});
+
+app.get('/api/geocode', async (c) => {
+  const address = c.req.query('address');
+  if (!address) {
+    return c.json({ error: 'Address query parameter is required' }, 400);
+  }
+
+  const apiKey = c.env.GOOGLE_API_KEY || GOOGLE_API_KEY; // Prefer env variable
+  const googleApiUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
+
+  try {
+    const response = await fetch(googleApiUrl);
+    const data = await response.json();
+
+    if (data.status === 'OK' && data.results && data.results.length > 0) {
+      const location = data.results[0].geometry.location;
+      return c.json({ latitude: location.lat, longitude: location.lng });
+    } else if (data.status === 'ZERO_RESULTS') {
+      return c.json({ error: 'Address not found by Google Geocoding.', details: data.status }, 404);
+    } else {
+      console.error('Google Geocoding API Error:', data.status, data.error_message);
+      return c.json({ error: 'Google Geocoding API error.', details: data.error_message || data.status }, 500);
+    }
+  } catch (error) {
+    console.error('Error fetching from Google API:', error);
+    return c.json({ error: 'Failed to connect to Google Geocoding service.' }, 502);
   }
 });
 

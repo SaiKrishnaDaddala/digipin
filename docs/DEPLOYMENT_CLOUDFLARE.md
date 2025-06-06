@@ -31,7 +31,28 @@ The backend API is defined in `worker.js` and uses Hono.js.
     *   **Important:** Change the `name` field to a unique name for your worker (e.g., `name = "my-unique-digipin-api"`). This will form part of its URL (e.g., `my-unique-digipin-api.yourusername.workers.dev`).
     *   Ensure `main = "worker.js"` and `compatibility_date` is set.
 
-3.  **Deploy the Worker:**
+### 3. Configure Google Geocoding API Key (Mandatory for Google Address Search)
+
+The newly integrated Google Address Search feature requires a Google Geocoding API key. The backend worker (`worker.js`) is configured to use an environment variable named `GOOGLE_API_KEY` for this purpose.
+
+1.  **Obtain a Google Geocoding API Key:**
+    *   Go to the Google Cloud Console.
+    *   Create a new project or select an existing one.
+    *   Enable the "Geocoding API" for your project.
+    *   Create an API key under "Credentials". Make sure to restrict this API key to only allow the "Geocoding API" and, if possible, restrict it to the domain your worker will run on (though this can be tricky with `workers.dev` subdomains, so start with API service restriction).
+    *   For detailed steps, visit: [https://developers.google.com/maps/documentation/geocoding/get-api-key](https://developers.google.com/maps/documentation/geocoding/get-api-key)
+
+2.  **Set the API Key as a Secret for Your Worker:**
+    Use the Wrangler CLI to set the API key as a secret for your worker. Secrets are environment variables that are encrypted and securely stored.
+    Replace `YOUR_API_KEY_VALUE` with the actual key you obtained (though the command will prompt you, so you don't type the key directly here).
+    ```bash
+    npx wrangler secret put GOOGLE_API_KEY
+    ```
+    Wrangler will prompt you to enter the value for the secret. Paste your API key there.
+
+    This command needs to be run in the directory containing your `wrangler.toml` file. The worker will automatically have access to this secret as `c.env.GOOGLE_API_KEY` at runtime.
+
+4.  **Deploy the Worker:**
     Run the following command in your project's root directory:
     ```bash
     wrangler deploy
@@ -39,9 +60,10 @@ The backend API is defined in `worker.js` and uses Hono.js.
     *   Wrangler will build and deploy your worker.
     *   After successful deployment, Wrangler will output the URL of your deployed worker (e.g., `https://my-unique-digipin-api.yourusername.workers.dev`). **Note this URL.**
 
-4.  **Test the Deployed Worker (Optional):**
+5.  **Test the Deployed Worker (Optional):**
     You can test basic functionality by opening these URLs in your browser or using a tool like `curl` or Postman:
-    *   `https://<YOUR_WORKER_URL>/` - Should show "DIGIPIN API Worker is running..."
+    *   `https://<YOUR_WORKER_URL>/` - Should show "DIGIPIN API Worker (v1) is running..."
+    *   (Note: The root path message in worker.js might have changed, ensure this matches the current message from `worker.js` if it's not serving `index.html` by default)
     *   `https://<YOUR_WORKER_URL>/api/digipin/encode?latitude=12.9716&longitude=77.5946`
     *   `https://<YOUR_WORKER_URL>/api/digipin/decode?digipin=YOUR-TEST-PIN` (replace with a valid pin)
 
@@ -56,6 +78,7 @@ The frontend consists of the static files in the `public/` directory.
         ```javascript
         const DIGIPIN_API_WORKER_URL = 'https://my-unique-digipin-api.yourusername.workers.dev';
         ```
+    (Note: The `GOOGLE_API_KEY` is used directly by the Worker and does not need to be passed through or configured in this Pages API proxy function).
     *   Save the file.
 
 2.  **Commit Changes to Git:**
@@ -75,7 +98,7 @@ The frontend consists of the static files in the `public/` directory.
         *   **Build command:** Leave this blank if you don't have a separate build step for your frontend assets. If you were using tools like Webpack, Parcel, or a static site generator, you'd put your build command here.
         *   **Build output directory:** Set this to `public`. This is crucial as it tells Cloudflare Pages where your static files and the `functions` directory are located.
         *   **Root directory (Advanced):** Leave as `/` unless your project is in a subdirectory of the repository.
-    *   **Environment Variables (Optional):** Not needed for this specific setup if using the Pages Functions proxy as configured.
+    *   **Environment Variables (Build time):** While the frontend itself doesn't require build-time environment variables for this setup, the *backend Worker it communicates with* now requires the `GOOGLE_API_KEY` to be set as a secret (as described in Part 1). Ensure this is done for the Google address search functionality to work.
     *   Click **Save and Deploy**.
 
 4.  **Access Your Deployed Frontend:**
@@ -87,7 +110,7 @@ The frontend consists of the static files in the `public/` directory.
 
 *   Open your deployed Cloudflare Pages site.
 *   Test all functionalities:
-    *   Address search (via the geocoder on the map).
+    *   Address search (via the new Google address search input and the geocoder on the map).
     *   "Use My Location" button.
     *   Clicking on the map to get a DIGIPIN.
     *   Decoding an existing DIGIPIN.
