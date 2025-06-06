@@ -5,9 +5,9 @@ import { serveStatic } from 'hono/cloudflare-workers';
 
 // Import HTML content as raw strings.
 // Ensure your build process supports this (e.g., via ?raw suffix or similar).
-import indexHtml from './public/index.html?raw';
-import locationViewerHtml from './public/location_viewer.html?raw';
-import swaggerYamlContent from './public/swagger.yaml?raw';
+import indexHtml from '../public/index.html?raw';
+import locationViewerHtml from '../public/location_viewer.html?raw';
+import swaggerYamlContent from '../public/swagger.yaml?raw';
 
 import { getDigiPin, getLatLngFromDigiPin } from './src/digipin';
 

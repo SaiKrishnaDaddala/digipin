@@ -1,0 +1,125 @@
+openapi: 3.0.0
+info:
+  title: DIGIPIN API
+  description: Encode and decode DIGIPIN based on latitude and longitude
+  version: 1.0.0
+servers:
+  - url: https://{customApiDomain}/api
+    description: Your custom domain for the API. Update the 'customApiDomain' variable with your domain name (e.g., api.example.com). The '/api' path is part of this server configuration.
+    variables:
+      customApiDomain:
+        default: api.yourcustomdomain.com
+        description: Enter your custom domain name here (e.g., api.example.com or my-service.example.com).
+  - url: https://{workerName}.{accountSubdomain}.workers.dev/api
+    description: Deployed Cloudflare Worker URL. Update the variables with your specific deployment details.
+    variables:
+      workerName:
+        default: digipin-api-worker
+        description: Your Cloudflare Worker's name.
+      accountSubdomain:
+        default: your-account-name
+        description: Your Cloudflare account's subdomain for workers.
+  - url: http://localhost:8787/api
+    description: Local development server (typically started with 'wrangler dev').
+
+paths:
+  /digipin/encode:
+    post:
+      summary: Encode lat/lon into DIGIPIN
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                latitude:
+                  type: number
+                longitude:
+                  type: number
+      responses:
+        '200':
+          description: Successfully encoded DIGIPIN
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  digipin:
+                    type: string
+        '400':
+          description: Invalid input
+    get:
+      summary: Encode latitude and longitude into DIGIPIN
+      parameters:
+        - in: query
+          name: latitude
+          required: true
+          schema:
+            type: number
+        - in: query
+          name: longitude
+          required: true
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Successfully encoded DIGIPIN
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  digipin:
+                    type: string
+        '400':
+          description: Invalid input
+
+  /digipin/decode:
+    post:
+      summary: Decode DIGIPIN to coordinates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                digipin:
+                  type: string
+      responses:
+        '200':
+          description: Successfully decoded DIGIPIN
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  latitude:
+                    type: number
+                  longitude:
+                    type: number
+        '400':
+          description: Invalid DIGIPIN
+    get:
+      summary: Decode DIGIPIN to coordinates
+      parameters:
+        - in: query
+          name: digipin
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully decoded DIGIPIN
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  latitude:
+                    type: number
+                  longitude:
+                    type: number
+        '400':
+          description: Invalid DIGIPIN
